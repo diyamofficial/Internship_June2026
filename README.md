@@ -101,5 +101,5 @@ The project includes an LLM-as-a-Judge evaluation approach to assess:
 ## Author
 
 Diya Mathews
-Computer Science Engineering Student
+
 
