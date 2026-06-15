@@ -1,0 +1,16 @@
+langchain
+langchain-community
+langchain-core
+langchain-google-genai
+langgraph
+groq
+datasets
+wikipedia-api
+chromadb
+sentence-transformers
+pypdf
+tiktoken
+ipykernel
+google-generativeai
+pandas
+numpy
