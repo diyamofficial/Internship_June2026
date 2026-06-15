@@ -3,6 +3,9 @@
 An end-to-end Retrieval-Augmented Generation (RAG) pipeline built using LangChain, LangGraph, Groq LLMs, embeddings, and ChromaDB for context-aware question answering and evaluation.
 
 ---
+## Pipeline Architecture
+
+![Pipeline Diagram](pipeline.png)
 
 ## Features
 
