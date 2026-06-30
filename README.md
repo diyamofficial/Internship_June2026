@@ -4,12 +4,6 @@ An end-to-end Retrieval-Augmented Generation (RAG) pipeline built using LangChai
 
 ---
 
-## Pipeline Architecture
-
-![Pipeline Diagram](pipeline.png)
-
----
-
 ## Project Phases
 
 ### Phase 1 – RAG Basics
