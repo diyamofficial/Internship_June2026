@@ -1,64 +1,82 @@
 import pickle
 import chromadb
 from rank_bm25 import BM25Okapi
+import streamlit as st
 
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
 from langchain_groq import ChatGroq
 
 
-# -------------------------------
-# Load Embedding Model
-# -------------------------------
+# ============================================================
+# EMBEDDING MODEL
+# ============================================================
 
 EMBED_MODEL = "models/gemini-embedding-001"
 
 embedder = GoogleGenerativeAIEmbeddings(
-    model=EMBED_MODEL
+    model=EMBED_MODEL,
+    google_api_key=st.secrets["GOOGLE_API_KEY"]
 )
 
 
-# -------------------------------
-# Load ChromaDB
-# -------------------------------
+# ============================================================
+# CHROMADB
+# ============================================================
 
-client = chromadb.PersistentClient(
-    path="./chroma_db"
-)
+@st.cache_resource
+def load_chroma():
+    client = chromadb.PersistentClient(
+        path="./chroma_db"
+    )
 
-collection = client.get_collection(
-    "rag_chunks"
-)
+    return client.get_collection(
+        "rag_chunks"
+    )
 
 
-# -------------------------------
-# Load Chunks
-# -------------------------------
+collection = load_chroma()
+
+
+# ============================================================
+# LOAD CHUNKS
+# ============================================================
 
 with open("all_chunks.pkl", "rb") as f:
     all_chunks = pickle.load(f)
 
 
-# -------------------------------
-# Build BM25
-# -------------------------------
+# ============================================================
+# BM25 INDEX
+# ============================================================
 
-tokenized_chunks = [
-    chunk["text"].lower().split()
-    for chunk in all_chunks
-]
+@st.cache_resource
+def load_bm25():
 
-bm25 = BM25Okapi(tokenized_chunks)
+    tokenized_chunks = [
+        chunk["text"].lower().split()
+        for chunk in all_chunks
+    ]
+
+    return BM25Okapi(tokenized_chunks)
 
 
-# -------------------------------
-# Load Groq
-# -------------------------------
+bm25 = load_bm25()
+
+
+# ============================================================
+# GROQ LLM
+# ============================================================
 
 llm = ChatGroq(
+    api_key=st.secrets["GROQ_API_KEY"],
     model="llama-3.3-70b-versatile",
     temperature=0.1
 )
 
+
+# ============================================================
+# PROMPT TEMPLATE
+# ============================================================
 
 PROMPT_TEMPLATE = """
 You are a helpful AI assistant.
@@ -80,8 +98,13 @@ Answer:
 """
 
 
+# ============================================================
+# HYBRID RETRIEVAL
+# ============================================================
+
 def retrieve(question, k=5):
 
+    # ---------- Vector Search ----------
     query_vector = embedder.embed_query(question)
 
     vector_results = collection.query(
@@ -102,6 +125,7 @@ def retrieve(question, k=5):
         )
     ]
 
+    # ---------- BM25 Search ----------
     tokenized_query = question.lower().split()
 
     bm25_scores = bm25.get_scores(
@@ -123,19 +147,24 @@ def retrieve(question, k=5):
         for i in top_indices
     ]
 
+    # ---------- Merge Results ----------
     merged = {}
 
     for chunk in vector_chunks + bm25_chunks:
         merged[chunk["text"]] = chunk
 
-    return list(merged.values())[:k]
+    return list(merged.values())[:min(k, len(merged))]
 
 
-def generate_answer(question, chunks):
+# ============================================================
+# ANSWER GENERATION
+# ============================================================
+
+def generate_answer(question, retrieved_chunks):
 
     context = "\n\n".join(
         f"[{i+1}] {chunk['text']}"
-        for i, chunk in enumerate(chunks)
+        for i, chunk in enumerate(retrieved_chunks)
     )
 
     prompt = PROMPT_TEMPLATE.format(
@@ -148,13 +177,20 @@ def generate_answer(question, chunks):
     return response.content
 
 
+# ============================================================
+# MAIN RAG FUNCTION
+# ============================================================
+
 def rag_chat(question):
 
-    chunks = retrieve(question)
+    retrieved_chunks = retrieve(
+        question,
+        k=5
+    )
 
     answer = generate_answer(
         question,
-        chunks
+        retrieved_chunks
     )
 
-    return answer, chunks
+    return answer, retrieved_chunks
