@@ -41,8 +41,12 @@ collection = load_chroma()
 # LOAD CHUNKS
 # ============================================================
 
-with open("all_chunks.pkl", "rb") as f:
-    all_chunks = pickle.load(f)
+@st.cache_resource
+def load_chunks():
+    with open("all_chunks.pkl", "rb") as f:
+        return pickle.load(f)
+
+all_chunks = load_chunks()
 
 
 # ============================================================
