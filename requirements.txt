@@ -1,3 +1,5 @@
+streamlit
+
 langchain
 langchain-community
 langchain-core
@@ -5,19 +7,20 @@ langchain-google-genai
 langchain-groq
 langgraph
 
-streamlit
-rank-bm25
-
 chromadb
-sentence-transformers
-transformers
-torch
+rank-bm25
 
 google-generativeai
 groq
 
-datasets
-ragas
+nltk
+pandas
+numpy
+scikit-learn
+tqdm
+
+requests
+protobuf
 
 wikipedia
 wikipedia-api
@@ -25,17 +28,8 @@ wikipedia-api
 pypdf
 docx2txt
 
+ragas
+datasets
+
 tiktoken
-nltk
-
-pandas
-numpy
-requests
-
-matplotlib
-scikit-learn
-tqdm
 python-dotenv
-protobuf
-
-ipykernel
