@@ -5,6 +5,9 @@ langchain-google-genai
 langchain-groq
 langgraph
 
+streamlit
+rank-bm25
+
 chromadb
 sentence-transformers
 transformers
