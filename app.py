@@ -1,81 +1,189 @@
 import streamlit as st
-
 from rag_pipeline import rag_chat
 
+# ============================================================
+# PAGE CONFIG
+# ============================================================
+
 st.set_page_config(
-    page_title="Wikipedia RAG Assistant",
+    page_title="InsightRAG",
     page_icon="🤖",
     layout="wide"
 )
 
-st.title("🤖 Wikipedia RAG Assistant")
-
-st.markdown(
-    """
-    Hybrid Search • ChromaDB • Gemini Embeddings • Groq LLM
-    """
-)
+# ============================================================
+# SIDEBAR
+# ============================================================
 
 with st.sidebar:
 
-    st.header("Project Info")
+    st.title("🤖 InsightRAG")
 
     st.markdown("""
-    **Knowledge Base**
-    - Wikipedia Documents
+    ### Hybrid Knowledge Assistant
 
-    **Search**
-    - Vector Search
-    - BM25 Search
+    Built using:
 
-    **Models**
     - Gemini Embeddings
-    - Llama 3.3 70B
+    - ChromaDB
+    - BM25 Retrieval
+    - Groq Llama 3.3 70B
 
-    **Evaluation**
-    - RAGAS Tested
+    ### Features
+
+    ✅ Hybrid Search
+
+    ✅ Retrieval-Augmented Generation
+
+    ✅ Source Transparency
+
+    ✅ Context-Based Answers
+
+    ✅ RAGAS Evaluated
     """)
 
-question = st.text_input(
-    "Ask a question"
+    st.divider()
+
+    st.markdown("### Example Questions")
+
+    st.markdown("""
+    - What is Retrieval-Augmented Generation?
+    - Explain ChromaDB.
+    - What are embeddings?
+    - How does hybrid retrieval work?
+    - Explain BM25 ranking.
+    """)
+
+    st.divider()
+
+    with st.expander("⚙️ How It Works"):
+
+        st.markdown("""
+        ```text
+        User Question
+              ↓
+        Hybrid Retrieval
+        (Vector + BM25)
+              ↓
+        Relevant Chunks
+              ↓
+        Groq Llama 3.3
+              ↓
+        Final Answer
+        ```
+        """)
+
+# ============================================================
+# HEADER
+# ============================================================
+
+st.title("🤖 InsightRAG")
+
+st.markdown(
+    """
+    **Hybrid Knowledge Assistant powered by ChromaDB, Gemini Embeddings, BM25 Retrieval, and Groq Llama 3.3**
+    """
 )
 
-if st.button("Generate Answer"):
+# ============================================================
+# SESSION STATE
+# ============================================================
 
-    if question:
+if "messages" not in st.session_state:
+    st.session_state.messages = []
+
+# ============================================================
+# DISPLAY CHAT HISTORY
+# ============================================================
+
+for message in st.session_state.messages:
+
+    with st.chat_message(message["role"]):
+        st.markdown(message["content"])
+
+# ============================================================
+# CHAT INPUT
+# ============================================================
+
+question = st.chat_input(
+    "Ask a question about the knowledge base..."
+)
+
+# ============================================================
+# PROCESS QUERY
+# ============================================================
+
+if question:
+
+    st.session_state.messages.append(
+        {
+            "role": "user",
+            "content": question
+        }
+    )
+
+    with st.chat_message("user"):
+        st.markdown(question)
+
+    with st.chat_message("assistant"):
 
         with st.spinner("Searching knowledge base..."):
 
-            answer, chunks = rag_chat(
-                question
-            )
+            answer, chunks = rag_chat(question)
 
-        st.subheader("🧠 Answer")
+        st.markdown(answer)
 
-        st.write(answer)
+    st.session_state.messages.append(
+        {
+            "role": "assistant",
+            "content": answer
+        }
+    )
 
-        st.subheader("📚 Retrieved Chunks")
+    st.divider()
 
-        for i, chunk in enumerate(chunks):
+    st.subheader("📊 Retrieval Statistics")
 
-            with st.expander(
-                f"Chunk {i+1}"
-            ):
-                st.write(chunk["text"])
+    col1, col2, col3 = st.columns(3)
 
-        st.subheader("⚡ Statistics")
+    col1.metric(
+        "Chunks Retrieved",
+        len(chunks)
+    )
 
-        st.info(
-            f"""
-Retrieved Chunks: {len(chunks)}
+    col2.metric(
+        "Embedding Model",
+        "Gemini"
+    )
 
-Embedding Model:
-Gemini Embedding 001
+    col3.metric(
+        "LLM",
+        "Llama 3.3"
+    )
 
-LLM:
-Llama 3.3 70B
+    st.divider()
 
-Search:
-Hybrid (Vector + BM25)
-"""
-        )
+    st.subheader("📚 Retrieved Context")
+
+    for i, chunk in enumerate(chunks):
+
+        with st.expander(
+            f"Chunk {i+1}"
+        ):
+
+            st.markdown(chunk["text"])
+
+            if chunk.get("metadata"):
+                st.caption(
+                    f"Metadata: {chunk['metadata']}"
+                )
+
+# ============================================================
+# FOOTER
+# ============================================================
+
+st.divider()
+
+st.caption(
+    "InsightRAG • Hybrid Retrieval (Vector + BM25) • ChromaDB • Gemini Embeddings • Groq Llama 3.3"
+)
