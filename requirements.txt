@@ -7,7 +7,7 @@ langchain-google-genai
 langchain-groq
 langgraph
 
-chromadb
+chromadb==0.5.23
 rank-bm25
 
 google-generativeai
