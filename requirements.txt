@@ -1,35 +1,16 @@
 streamlit
 
+chromadb==0.5.23
+
 langchain
-langchain-community
 langchain-core
 langchain-google-genai
 langchain-groq
-langgraph
-
-chromadb==0.5.23
-rank-bm25
 
 google-generativeai
-groq
 
-nltk
-pandas
+rank-bm25
+
 numpy
-scikit-learn
-tqdm
-
 requests
 protobuf
-
-wikipedia
-wikipedia-api
-
-pypdf
-docx2txt
-
-ragas
-datasets
-
-tiktoken
-python-dotenv
